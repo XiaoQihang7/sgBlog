@@ -1,0 +1,32 @@
+server:
+  port: 7777
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/sg_blog?characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: 200209
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size:
+        5MB
+mybatis-plus:
+  configuration:
+    #日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      logic-delete-field: delFlag
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      #设置mysql主键的自增方式，不设置则默认为mybatis提供的雪花算法生成
+      id-type:
+        AUTO
+oss:
+  accesskey: abnT1vVrIZIlCB9LAC4iL6FMTV5RVtWii5UfvEoG
+  secretKey: JZp3yPTGyBbL0VxKBkD1fi0KO7qgMXhBXvX5M_q1
+  bucket: qi-blog1
+
+
