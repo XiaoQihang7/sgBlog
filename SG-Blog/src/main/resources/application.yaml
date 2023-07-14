@@ -15,6 +15,7 @@ mybatis-plus:
   configuration:
     #日志
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    #将数据库带有_的字段与pojo类的属性驼峰命名相关联;写sql的时候就哭呀不需要写_了
     map-underscore-to-camel-case: true
   global-config:
     db-config:
@@ -24,6 +25,9 @@ mybatis-plus:
       #设置mysql主键的自增方式，不设置则默认为mybatis提供的雪花算法生成
       id-type:
         AUTO
+  #起别名，且不区分大小写
+  type-aliases-package: com.sg.domain.entity
+
 oss:
   accesskey: abnT1vVrIZIlCB9LAC4iL6FMTV5RVtWii5UfvEoG
   secretKey: JZp3yPTGyBbL0VxKBkD1fi0KO7qgMXhBXvX5M_q1

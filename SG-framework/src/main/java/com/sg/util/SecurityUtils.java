@@ -7,11 +7,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 /**
  * @Author 三更  B站： https://space.bilibili.com/663528522
  */
-public class SecurityUtils
-{
-
+public class SecurityUtils {
     /**
-     * 获取用户
+     * 获取用户(在UserDetailsService接口实现类中返回的LoginUser，带封装的用户信息+权限信息)
      **/
     public static LoginUser getLoginUser()
     {
@@ -27,7 +25,7 @@ public class SecurityUtils
 
     public static Boolean isAdmin(){
         Long id = getLoginUser().getUser().getId();
-        return id != null && 1L == id;
+        return id != null && id.equals(1L);
     }
 
     public static Long getUserId() {

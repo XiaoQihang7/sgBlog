@@ -41,4 +41,14 @@ public class WebUtils
 //        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 //        response.setCharacterEncoding("utf-8");
     }
+
+
+    public static void setDownLoadHeader(String fileName , HttpServletResponse response) throws UnsupportedEncodingException {
+        // 这里注意 有同学反应使用swagger 会导致各种问题，请直接用浏览器或者用postman
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setCharacterEncoding("utf-8");
+        // 这里URLEncoder.encode可以防止中文乱码 当然和easyexcel没有关系 ,[%20是网页地址的空格符]
+        String fName = URLEncoder.encode(fileName, "UTF-8").replaceAll("\\+", "%20");
+        response.setHeader("Content-disposition", "attachment;filename=" + fName + ".xlsx");
+    }
 }

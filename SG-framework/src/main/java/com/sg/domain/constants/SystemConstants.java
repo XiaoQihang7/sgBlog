@@ -29,4 +29,10 @@ public class SystemConstants {
      * 浏览量前缀
      */
     public static final String LIU_LAN="article:viewCount";
+
+    public static final String MENU ="C";
+
+    public static final Object BUTTON ="F" ;
+    public static final String ADMAIN = "1";
 }
+

@@ -6,13 +6,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sg.domain.ResponseResult;
 import com.sg.domain.constants.SystemConstants;
 import com.sg.domain.entity.Article;
+import com.sg.domain.entity.ArticleTag;
 import com.sg.domain.entity.Category;
-import com.sg.domain.vo.ArticleDetailVo;
-import com.sg.domain.vo.ArticleListVo;
-import com.sg.domain.vo.HotArticleVo;
-import com.sg.domain.vo.PageVo;
+import com.sg.domain.vo.*;
 import com.sg.mapper.ArticleMapper;
 import com.sg.service.ArticleService;
+import com.sg.service.ArticleTagService;
 import com.sg.service.CategoryService;
 import com.sg.util.BeanCopyUtils;
 import com.sg.util.RedisCache;
@@ -36,6 +35,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper,Article> imple
 
     @Autowired
     CategoryService categoryService;
+    @Autowired
+    private RedisCache redisCache;
+    @Autowired
+    private ArticleTagService articleTagService;
 
     @Override
     public ResponseResult hotArticleList() {
@@ -120,8 +123,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper,Article> imple
         return ResponseResult.okResult(articleDetailVo);
     }
 
-    @Autowired
-    private RedisCache redisCache;
 
     @Override
     public ResponseResult updateViewCount(Long id) {
@@ -137,6 +138,19 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper,Article> imple
         }
         //根据文章id，在redis中更新浏览量
         redisCache.incrementCacheMapValue(LIU_LAN,id.toString(),1);
+        return ResponseResult.okResult();
+    }
+
+    @Override
+    public ResponseResult add(AddArticleDto article) {
+        //将数据封装为Article类型，存入数据库
+        Article copyBean = BeanCopyUtils.copyBean(article, Article.class);
+        save(copyBean);
+
+        //将文章对应的标签取出存入数据库（实现一对多的关系映射）
+        List<ArticleTag> articleTags = article.getTags().stream().map(tagId -> new ArticleTag(article.getId(), tagId))
+                .collect(Collectors.toList());
+        articleTagService.saveBatch(articleTags);
         return ResponseResult.okResult();
     }
 

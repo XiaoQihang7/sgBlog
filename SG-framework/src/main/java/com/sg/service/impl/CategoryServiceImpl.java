@@ -1,20 +1,27 @@
 package com.sg.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sg.domain.ResponseResult;
 import com.sg.domain.constants.SystemConstants;
 import com.sg.domain.entity.Article;
 import com.sg.domain.entity.Category;
 import com.sg.domain.vo.CategoryVo;
+import com.sg.domain.vo.PageVo;
 import com.sg.mapper.CategoryMapper;
 import com.sg.service.ArticleService;
 import com.sg.service.CategoryService;
 import com.sg.util.BeanCopyUtils;
+import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -50,6 +57,30 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         List<CategoryVo> categoryVos = BeanCopyUtils.copyBeanList(categories, CategoryVo.class);
 
         return ResponseResult.okResult(categoryVos);
+    }
+
+    @Override
+    public List<CategoryVo> listAllCategory() {
+        LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Category::getStatus,SystemConstants.STATUS_NORMAL);
+        queryWrapper.select(Category::getId,Category::getDescription,Category::getName,Category::getStatus);
+        List<Category> list = list(queryWrapper);
+        return BeanCopyUtils.copyBeanList(list, CategoryVo.class);
+    }
+
+    @Override
+    public PageVo listAll(Integer pageNum, Integer pageSize, CategoryVo categoryVo) {
+        LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
+        if (!Objects.isNull(categoryVo)){
+            queryWrapper.like(StringUtils.hasText(categoryVo.getName()),Category::getName,categoryVo.getName());
+            queryWrapper.eq(StringUtils.hasText(categoryVo.getStatus()),Category::getStatus,categoryVo.getStatus());
+        }
+
+        //TODO 分页查询查的字段是否多了，顺便也看看其它分页查询
+        Page<Category> page = new Page<>(pageNum, pageSize);
+        Page<Category> categoryPage = page(page, queryWrapper);
+        PageVo pageVo = new PageVo(categoryPage.getRecords(), categoryPage.getTotal());
+        return pageVo;
     }
 
 }

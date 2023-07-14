@@ -3,6 +3,10 @@ package com.sg.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sg.domain.ResponseResult;
 import com.sg.domain.entity.Category;
+import com.sg.domain.vo.CategoryVo;
+import com.sg.domain.vo.PageVo;
+
+import java.util.List;
 
 
 /**
@@ -14,5 +18,9 @@ import com.sg.domain.entity.Category;
 public interface CategoryService extends IService<Category> {
 
     ResponseResult getCategoryList();
+
+    List<CategoryVo> listAllCategory();
+
+    PageVo listAll(Integer pageNum, Integer pageSize, CategoryVo categoryVo);
 }
 

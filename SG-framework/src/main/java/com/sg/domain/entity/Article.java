@@ -1,6 +1,7 @@
 package com.sg.domain.entity;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -64,14 +65,16 @@ public class Article implements Serializable {
      * 是否允许评论 1是，0否
      */
     private String isComment;
-    
+
+    @TableField(fill = FieldFill.INSERT)
     private Long createBy;
-    
+    @TableField(fill = FieldFill.INSERT)
     private Date createTime;
-    
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateBy;
 
 //    @JSONField(format="yyyy-MM-dd HH:mm:ss")
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
     /*

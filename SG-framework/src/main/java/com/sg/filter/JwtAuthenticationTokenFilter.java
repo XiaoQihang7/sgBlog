@@ -1,4 +1,4 @@
-package com.sg.config;
+package com.sg.filter;
 
 import com.alibaba.fastjson.JSON;
 import com.sg.domain.ResponseResult;

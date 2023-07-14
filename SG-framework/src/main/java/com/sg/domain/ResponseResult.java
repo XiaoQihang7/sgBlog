@@ -39,12 +39,13 @@ public class ResponseResult<T> implements Serializable {
     public static ResponseResult<?> okResult() {
         return new ResponseResult<>();
     }
+
     public static ResponseResult okResult(int code, String msg) {
         ResponseResult result = new ResponseResult();
         return result.ok(code, null, msg);
     }
 
-    public static ResponseResult<?> okResult(Object data) {
+    public static ResponseResult okResult(Object data) {
         ResponseResult result = setAppHttpCodeEnum(AppHttpCodeEnum.SUCCESS, AppHttpCodeEnum.SUCCESS.getMsg());
         if(data!=null) {
             result.setData(data);
