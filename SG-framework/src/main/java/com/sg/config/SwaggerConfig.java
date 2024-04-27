@@ -4,13 +4,19 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.ApiInfoBuilder;
+import springfox.documentation.builders.ParameterBuilder;
 import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.schema.ModelRef;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.Contact;
+import springfox.documentation.service.Parameter;
 import springfox.documentation.service.Tag;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 //@EnableSwagger2
@@ -32,6 +38,7 @@ public class SwaggerConfig {
                 .apis(RequestHandlerSelectors.basePackage("com.sg.controller")).build()
                 // 用来创建该API的基本信息，展示在文档的页面中（自定义展示的信息）
                 .apiInfo(apiInfo())
+                .globalOperationParameters(getGlobalOperationParameters())
                 //tag标签与描述绑定
                 .tags(new Tag(TAG_1, "评论相关接口"))
                 .tags(new Tag(TAG_2, "文章相关接口."))
@@ -40,6 +47,19 @@ public class SwaggerConfig {
                 .tags(new Tag(TAG_5, "友链相关接口."))
                 .tags(new Tag(TAG_6, "用户相关接口."))
                 .tags(new Tag(TAG_7, "上传相关接口."));
+    }
+
+    private List<Parameter> getGlobalOperationParameters() {
+        List<Parameter> pars = new ArrayList<>();
+        ParameterBuilder parameterBuilder = new ParameterBuilder();
+        // header query cookie
+        parameterBuilder.name("Token").description("token").modelRef(new ModelRef("string")).parameterType("header").required(false);
+        pars.add(parameterBuilder.build());
+        parameterBuilder.name("username").description("用户名").modelRef(new ModelRef("String")).parameterType("query").required(false);
+        pars.add(parameterBuilder.build());
+        parameterBuilder.name("password").description("用户密码").modelRef(new ModelRef("string")).parameterType("cookie").required(false);
+        pars.add(parameterBuilder.build());
+        return pars;
     }
 
     private ApiInfo apiInfo() {

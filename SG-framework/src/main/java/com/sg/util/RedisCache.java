@@ -216,7 +216,8 @@ public class RedisCache
     public <T> T getCacheMapValue(final String key, final String hKey)
     {
         HashOperations<String, String, T> opsForHash = redisTemplate.opsForHash();
-        return opsForHash.get(key, hKey);
+        T t = opsForHash.get(key, hKey);
+        return t;
     }
 
     /**

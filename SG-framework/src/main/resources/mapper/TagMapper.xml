@@ -20,4 +20,12 @@
         create_time,update_by,update_time,
         del_flag,remark
     </sql>
+
+    <delete id="deleteTagsBatchByArticleIds" parameterType="list">
+        DELETE FROM sg_article_tag
+            WHERE article_id IN
+        <foreach collection="as" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
 </mapper>

@@ -11,6 +11,7 @@ import java.util.Date;
  * mp的自动填充配置
  */
 @Component
+//todo mp是如何封装的？mybatis可否做到
 public class MyMetaObjectHandler implements MetaObjectHandler {
     @Override
     public void insertFill(MetaObject metaObject) {
@@ -30,6 +31,8 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
     @Override
     public void updateFill(MetaObject metaObject) {
         this.setFieldValByName("updateTime", new Date(), metaObject);
-        this.setFieldValByName(" ", SecurityUtils.getUserId(), metaObject);
+        if (SecurityUtils.getAuthentication()!=null&&SecurityUtils.getLoginUser()!=null&&SecurityUtils.getUserId()!=null) {
+            this.setFieldValByName("updateBy", SecurityUtils.getUserId(), metaObject);
+        }
     }
 }

@@ -19,9 +19,20 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,name,logo,
+        select id,name,logo,
         description,address,status,
-        create_by,create_time,update_by,
+        create_by,create_time as createTime,update_by,
         update_time,del_flag
+        from sg_link
     </sql>
+
+    <select id="selectDateTest" resultType="com.sg.domain.dto.LinkTestDate">
+        <include refid="Base_Column_List"/>
+        <where>
+            <if test="createTime !=null">
+                and create_time &lt; #{createTime}
+            </if>
+        </where>
+    </select>
+
 </mapper>

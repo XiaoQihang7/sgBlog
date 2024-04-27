@@ -3,6 +3,34 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sg.mapper.RoleMapper">
+    <!--添加角色，返回主键-->
+    <insert id="addRoleReturnId" parameterType="role" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO sys_role (role_name,role_key,role_sort,status,remark)
+        values
+            (#{roleName}, #{roleKey} ,#{roleSort} ,#{status} ,#{remark})
+    </insert>
+
+    <!--修改角色状态-->
+    <update id="updateRoleStatus">
+        UPDATE sys_role
+            SET status = #{status}
+            WHERE id = #{roleId}
+    </update>
+
+    <!--更新角色信息,有必要这样写吗？直接set值不进行判断会不会更好？-->
+    <update id="updateRoleInfo" parameterType="role">
+        UPDATE sys_role
+            SET
+                <if test="remark != null and remark != ''">remark = #{remark}, </if>
+                <if test="role_key != null and role_key != ''">role_key = #{roleKey}, </if>
+                <if test="role_name != null and role_name != ''">role_name = #{roleName}, </if>
+                <if test="role_sort != null">role_sort = #{roleSort}, </if>
+                <if test="status != null">status = #{status}</if>
+            WHERE id =#{roleId}
+    </update>
+
+
+
     <select id="selectRoleKeyByUserId" resultType="java.lang.String">
         SELECT
             r.`role_key`
@@ -14,5 +42,34 @@
             r.`status` = 0 AND
             r.`del_flag` = 0
     </select>
+
+    <select id="selectRoleList" resultType="com.sg.domain.vo.RoleVo">
+        SELECT id, role_name, role_key, role_sort, status
+        FROM sys_role
+        <where>
+            <if test="roleName != null and roleName != ''">
+                AND roleName LIKE CONCAT('%', #{roleName}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        AND del_flag = '0'
+        </where>
+        ORDER BY role_sort ASC
+        LIMIT #{start}, #{pageSize}
+    </select>
+
+    <select id="selectRoleCount" resultType="int">
+        SELECT COUNT(*) FROM sys_role
+        <where>
+            <if test="roleName != null and roleName != ''">
+                AND roleName LIKE CONCAT('%', #{roleName}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        </where>
+    </select>
+
 
 </mapper>

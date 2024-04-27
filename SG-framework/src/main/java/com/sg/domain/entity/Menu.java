@@ -5,7 +5,9 @@ import java.util.Date;
 import java.io.Serializable;
 import java.util.List;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.sg.domain.dto.UserMenuParams;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -52,12 +54,16 @@ public class Menu  {
     //菜单图标
     private String icon;
     //创建者
+    @TableField(fill = FieldFill.INSERT)
     private Long createBy;
     //创建时间
+    @TableField(fill = FieldFill.INSERT)
     private Date createTime;
     //更新者
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateBy;
     //更新时间
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
     //备注
     private String remark;
@@ -68,6 +74,12 @@ public class Menu  {
     //mybatisplus是根据实体类的字段进行查询，需要使用这个注解告诉mp不要查询这个字段
     @TableField(exist = false)
     private List<Menu> children;
+
+//    @TableField(exist = false)
+//    private Long userId;
+
+    @TableField(exist = false)
+    private UserMenuParams userMenuParams;
 
 
 }

@@ -5,21 +5,21 @@
 <mapper namespace="com.sg.mapper.UserMapper">
 
     <resultMap id="BaseResultMap" type="com.sg.domain.entity.User">
-            <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="userName" column="user_name" jdbcType="VARCHAR"/>
-            <result property="nickName" column="nick_name" jdbcType="VARCHAR"/>
-            <result property="password" column="password" jdbcType="VARCHAR"/>
-            <result property="type" column="type" jdbcType="CHAR"/>
-            <result property="status" column="status" jdbcType="CHAR"/>
-            <result property="email" column="email" jdbcType="VARCHAR"/>
-            <result property="phonenumber" column="phonenumber" jdbcType="VARCHAR"/>
-            <result property="sex" column="sex" jdbcType="CHAR"/>
-            <result property="avatar" column="avatar" jdbcType="VARCHAR"/>
-            <result property="createBy" column="create_by" jdbcType="BIGINT"/>
-            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
-            <result property="updateBy" column="update_by" jdbcType="BIGINT"/>
-            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
-            <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+        <result property="nickName" column="nick_name" jdbcType="VARCHAR"/>
+        <result property="password" column="password" jdbcType="VARCHAR"/>
+        <result property="type" column="type" jdbcType="CHAR"/>
+        <result property="status" column="status" jdbcType="CHAR"/>
+        <result property="email" column="email" jdbcType="VARCHAR"/>
+        <result property="phonenumber" column="phonenumber" jdbcType="VARCHAR"/>
+        <result property="sex" column="sex" jdbcType="CHAR"/>
+        <result property="avatar" column="avatar" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="BIGINT"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="BIGINT"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
     </resultMap>
 
     <sql id="Base_Column_List">
@@ -29,4 +29,142 @@
         avatar,create_by,create_time,
         update_by,update_time,del_flag
     </sql>
+
+    <insert id="insertBatch" parameterType="user" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_user (user_name,nick_name,password) values
+        <foreach collection="users" item="user" separator=",">
+            (#{user.userName}, #{user.nickName}, #{user.password})
+        </foreach>
+    </insert>
+
+    <!-- 获取是自增主键插入后的主键 -->
+    <insert id="insertOne" useGeneratedKeys="true" keyProperty="id" parameterType="user">
+        insert into sys_user (user_name, nick_name, password)
+        values (#{userName}, #{nickName}, #{password})
+    </insert>
+
+    <!-- 获取插入后的值 -->
+    <insert id="insertOneAndId" parameterType="User" useGeneratedKeys="true" keyProperty="id">
+        <!-- 注意这里的 useGeneratedKeys 属性设置为 true，表示使用数据库的自动生成主键 -->
+        insert into sys_user (user_name, nick_name, password)
+        values (#{userName}, #{nickName}, #{password})
+        <!-- 使用 selectKey 获取生成的主键值 -->
+        <selectKey keyProperty="id" resultType="int" order="AFTER">
+            <!-- 这里的 SELECT LAST_INSERT_ID() 是针对 MySQL 数据库，具体的数据库可能会有不同的语法 -->
+            SELECT LAST_INSERT_ID() AS id
+        </selectKey>
+    </insert>
+
+
+
+    <!--一个失败的嵌套sql-->
+    <!-- MyBatis不支持在同一个<insert>标签中执行多个SQL语句 -->
+    <!-- 批量插入需要使用存储过程或多个sql来进行插叙插入后的主键 -->
+    <insert id="insertAndGetIds" parameterType="java.util.List" statementType="CALLABLE">
+        <!-- 以批量插入的方式将数据插入到表中 -->
+        insert into sys_user (user_name,nick_name,password)
+        value
+        <foreach collection="list" item="user" separator=",">
+            (#{user.userName}, #{user.nickName}, #{user.password})
+        </foreach>;
+
+        <!-- 获取插入后的主键列表 -->
+        select LAST_INSERT_ID() as id from sys_user limit #{list.size};
+    </insert>
+
+    <!--批量插入用户角色-->
+    <insert id="addUserRole" parameterType="map">
+        INSERT INTO sys_user_role (user_id, role_id)
+        VALUES
+        <foreach collection="map" item="ur" separator=",">
+            (#{ur.userId},#{ur.roleId})
+        </foreach>
+    </insert>
+
+
+    <!--删除所有用户信息-->
+    <delete id="deleteAll">
+        delete from sys_user
+    </delete>
+
+    <update id="delById" parameterType="long">
+        UPDATE sys_user SET del_flag=1
+        WHERE id=#{id} AND del_flag=0
+    </update>
+
+    <!--根据条件删除用户-->
+
+
+    <!--查询所有user-->
+    <select id="getAllUsers" resultType="com.sg.domain.entity.User">
+        select
+        <include refid="Base_Column_List"/>
+        from sys_user
+    </select>
+
+    <!--根据单条件查询user-->
+    <select id="getUserByCondition" resultType="user" parameterType="user">
+        select
+        <include refid="Base_Column_List"/> FROM sys_user
+        <where>
+                <choose>
+                    <when test="id != null">sg_blog.sys_user.id = #{id}</when>
+                    <when test="userName != null and userName != '' ">user_name like
+                        CONCAT("%",#{userName},"%")
+                    </when>
+                    <when test="nickName != null and nickName != ''">nick_name like CONCAT("%",#{nickName},"%")
+                    </when>
+                </choose>
+        </where>
+    </select>
+
+    <!--根据多条件查询-->
+    <select id="getUserByConditions" resultType="user" parameterType="user">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM sg_blog.sys_user
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="userName != null and userName != ''">
+                AND user_name LIKE CONCAT('%', #{userName}, '%')
+            </if>
+            <if test="nickName != null and nickName != ''">
+                AND nick_name LIKE CONCAT('%', #{nickName}, '%')
+            </if>
+            <if test="phonenumber != null">
+                AND phonenumber = #{phonenumber}
+            </if>
+        </where>
+    </select>
+
+    <!--分页+条件查询用户信息-->
+    <select id="getUserList" resultType="com.sg.domain.vo.UserVo">
+        SELECT id,user_name,nick_name,email,phonenumber,sex,`status`,avatar,
+               create_time,create_by,update_by,update_time
+               FROM sys_user
+        <where>
+            <if test="userName != null and userName != ''">AND user_name like CONCAT('%',#{userName},'%')</if>
+            <if test="phonenumber != null and phonenumber != ''">AND phonenumber like CONCAT('%',#{phonenumber},'%')</if>
+            <if test="status != null and status != ''">AND status = #{status}</if>
+            AND del_flag = '0'
+        AND status = '0'
+        </where>
+        LIMIT #{pageNum} ,#{pageSize}
+
+    </select>
+
+    <select id="getUserListCount" resultType="java.lang.Integer">
+        SELECT count(*) from sys_user
+        <where>
+            <if test="userName != null and userName != ''">AND user_name like CONCAT('%',#{userName},'%')</if>
+            <if test="phonenumber != null and phonenumber != ''">AND phonenumber like CONCAT('%',#{phonenumber},'%')</if>
+            <if test="status != null and status != ''">AND status = #{status}</if>
+            AND del_flag = '0'
+            AND status = '0'
+        </where>
+    </select>
+
+
 </mapper>

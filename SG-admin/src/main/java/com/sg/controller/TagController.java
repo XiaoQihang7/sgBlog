@@ -3,11 +3,13 @@ package com.sg.controller;
 import com.sg.domain.ResponseResult;
 import com.sg.domain.entity.ArticleTag;
 import com.sg.domain.entity.Tag;
+import com.sg.domain.enums.AppHttpCodeEnum;
 import com.sg.domain.vo.PageVo;
 import com.sg.domain.vo.TagListDto;
 import com.sg.service.TagService;
 import com.sg.util.BeanCopyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,7 +28,10 @@ public class TagController {
     }
 
     @PostMapping
-    public ResponseResult addTag(Tag tagListDto){
+    public ResponseResult addTag(@RequestBody Tag tagListDto){
+        if (ObjectUtils.isEmpty(tagListDto)){
+            return ResponseResult.errorResult(AppHttpCodeEnum.TAG_NOT_NULL);
+        }
         tagService.save(tagListDto);
         return ResponseResult.okResult();
     }
@@ -43,7 +48,7 @@ public class TagController {
         return ResponseResult.okResult(tag);
     }
 
-    @PutMapping()
+    @PutMapping
     public ResponseResult updateTag(Tag tagListDto){
         tagService.updateById(tagListDto);
         return ResponseResult.okResult();

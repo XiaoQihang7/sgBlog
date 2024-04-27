@@ -28,6 +28,7 @@ mybatis-plus:
   #起别名，且不区分大小写
   type-aliases-package: com.sg.domain.entity
 
+
 oss:
   accesskey: abnT1vVrIZIlCB9LAC4iL6FMTV5RVtWii5UfvEoG
   secretKey: JZp3yPTGyBbL0VxKBkD1fi0KO7qgMXhBXvX5M_q1

@@ -27,12 +27,14 @@ public class UpdateViewCountJob {
     @Autowired
     private ArticleService articleService;
 
-    @Scheduled(cron = "0/44 * * * * ?")
+    @Scheduled(cron = "* 0/10 * * * ?") //从0分钟开始每十分钟执行一次
+    //todo 检查这里是不是有问题，执行太多次相同的sql了
     public void UpdateViewCount(){
         //查询redis中的浏览量
         Map<String, Integer> cacheMap = redisCache.getCacheMap(LIU_LAN);
         //将数据封装为list对象集合
-        List<Article> articles = cacheMap.entrySet().stream().map(m -> new Article(Long.valueOf(m.getKey()), m.getValue()))
+        List<Article> articles = cacheMap.entrySet().stream().map(m -> new Article(Long.valueOf(m.getKey()),
+                        m.getValue()))
                 .collect(Collectors.toList());
 
         articleService.updateBatchById(articles);

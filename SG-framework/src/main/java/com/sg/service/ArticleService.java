@@ -2,6 +2,7 @@ package com.sg.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sg.domain.ResponseResult;
+import com.sg.domain.dto.ArticleDto;
 import com.sg.domain.entity.Article;
 import com.sg.domain.vo.AddArticleDto;
 
@@ -18,4 +19,10 @@ public interface ArticleService extends IService<Article> {
     ResponseResult updateViewCount(Long id);
 
     ResponseResult add(AddArticleDto article);
+
+    ResponseResult listArticle(Integer pn, Integer ps, String title, String summary);
+
+    ResponseResult getArticle(Long id);
+
+    ResponseResult updateArticle(ArticleDto articleDto);
 }

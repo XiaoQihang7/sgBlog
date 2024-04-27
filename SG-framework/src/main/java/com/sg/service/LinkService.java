@@ -2,6 +2,7 @@ package com.sg.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sg.domain.ResponseResult;
+import com.sg.domain.dto.LinkTestDate;
 import com.sg.domain.entity.Link;
 
 /**
@@ -13,5 +14,6 @@ public interface LinkService extends IService<Link> {
 
     ResponseResult getAllLink();
 
+    ResponseResult selectDateTest(LinkTestDate date);
 }
 

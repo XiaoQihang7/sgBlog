@@ -1,10 +1,13 @@
 package com.sg.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sg.domain.ResponseResult;
 import com.sg.domain.constants.SystemConstants;
+import com.sg.domain.dto.ArticleDto;
 import com.sg.domain.entity.Article;
 import com.sg.domain.entity.ArticleTag;
 import com.sg.domain.entity.Category;
@@ -15,13 +18,15 @@ import com.sg.service.ArticleTagService;
 import com.sg.service.CategoryService;
 import com.sg.util.BeanCopyUtils;
 import com.sg.util.RedisCache;
-import io.swagger.models.auth.In;
+import com.sun.media.sound.WaveFileReader;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -82,13 +87,20 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper,Article> imple
         List<Article> articles = page.getRecords();
         //查询categoryName
         articles.stream()
-                .map(article ->
-//                {article.setCategoryName(categoryService.getById(article.getCategoryId()).getName());
-//                    return article;
-//              }
-                        //在实体类中进行加入的数据库中不存在的一个字段
-                article.setCategoryName(categoryService.getById(article.getCategoryId()).getName())
-                )
+                .map(article -> {
+                    //todo 这里查的太多了可以优化
+                    Category byId = categoryService.getById(article.getCategoryId());
+                    if (byId != null){
+                        String name = byId.getName();
+                        if(name!=null && name.equals(" ")) {
+                            article.setCategoryName(name);
+                        }
+                    }
+                    return article;
+              })
+                        //在实体类中进行加入的数据库中不存在的一个字段，set后返回实体类
+//                article.setCategoryName(categoryService.getById(article.getCategoryId()).getName())
+//                )
                 .collect(Collectors.toList());
         //articleId去查询articleName进行设置
 //        for (Article article : articles) {
@@ -109,16 +121,24 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper,Article> imple
         Article article = getById(id);
         //【优化】：从redis中获取viewCount
         Integer viewCount = redisCache.getCacheMapValue(LIU_LAN, id.toString());
-        article.setViewCount(viewCount.longValue());
+        //找到什么时候set的 ，容器启动后端Runner方法
+        if (viewCount!=null) {
+            article.setViewCount(viewCount.longValue());
+        }
         //转换成VO
         ArticleDetailVo articleDetailVo = BeanCopyUtils.copyBean(article, ArticleDetailVo.class);
         //根据分类id查询分类名
         //给旁边的标签赋予name，方便进行分类检索
         Long categoryId = articleDetailVo.getCategoryId();
-        Category category = categoryService.getById(categoryId);
-        if(category!=null){
+        LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<>();
+        wrapper.select(Category::getName).eq(Category::getId,categoryId);
+        Category category = null;
+        if (categoryId!=null) {
+             category = categoryService.getOne(wrapper);
         }
-        articleDetailVo.setCategoryName(category.getName());
+        if(category!=null){
+            articleDetailVo.setCategoryName(category.getName());
+        }
         //封装响应返回
         return ResponseResult.okResult(articleDetailVo);
     }
@@ -127,9 +147,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper,Article> imple
     @Override
     public ResponseResult updateViewCount(Long id) {
         //根据文章id，查询redis中是否存在该数据
-        int cacheMapValue = (int) redisCache.getCacheMapValue(LIU_LAN, id.toString());
+        //如果这里获取到的值为null，还强转为int直接空指针异常
+//        int cacheMapValue = (int) redisCache.getCacheMapValue(LIU_LAN, id.toString());
+        Object cacheMapValue = redisCache.getCacheMapValue(LIU_LAN, id.toString());
+        int countValue = 0;
+        if (cacheMapValue!=null){
+            countValue = (int) cacheMapValue;
+        }
         //数据缓存不存在
-        if (cacheMapValue==0){
+        if (countValue==0){
             Article thisArticle = getById(id);
             HashMap<String, Integer> map = new HashMap<>();
             map.put(thisArticle.getId().toString()
@@ -142,14 +168,81 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper,Article> imple
     }
 
     @Override
+    @Transactional
     public ResponseResult add(AddArticleDto article) {
+        //todo 初步进行参数校验
+        //这里的博文后面会根据博文的分类id进行分类查询，基本是不能为空的，但是在查询时我做了判空校验，这里暂时不进行参数校验
+
         //将数据封装为Article类型，存入数据库
         Article copyBean = BeanCopyUtils.copyBean(article, Article.class);
         save(copyBean);
 
         //将文章对应的标签取出存入数据库（实现一对多的关系映射）
-        List<ArticleTag> articleTags = article.getTags().stream().map(tagId -> new ArticleTag(article.getId(), tagId))
+        //这里出现问题，应该使用插入博文后回传的id，这个id在copyBean中，直接使用article是没有id值存在的
+        List<ArticleTag> articleTags = article.getTags().stream().map(tagId -> new ArticleTag(copyBean.getId(), tagId))
                 .collect(Collectors.toList());
+        articleTagService.saveBatch(articleTags);
+//        int i = 1/0;
+        return ResponseResult.okResult();
+    }
+
+    @Override
+    public ResponseResult listArticle(Integer pn, Integer ps, String title, String summary) {
+        LambdaQueryWrapper<Article> wrapper = new LambdaQueryWrapper<>();
+        wrapper.like(StringUtils.hasText(title),Article::getTitle,title);
+        wrapper.like(StringUtils.hasText(summary),Article::getSummary,summary);
+        Page<Article> articleP = new Page<>(pn, ps);
+        Page<Article> articlePage = page(articleP, wrapper);
+        PageVo pageVo = new PageVo(articlePage.getRecords(), articlePage.getTotal());
+        return ResponseResult.okResult(pageVo);
+    }
+
+    @Override
+    public ResponseResult getArticle(Long id) {
+        LambdaQueryWrapper<ArticleTag> tagLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        tagLambdaQueryWrapper.select(ArticleTag::getTagId);
+        tagLambdaQueryWrapper.eq(ArticleTag::getArticleId,id);
+        List<ArticleTag> tags = articleTagService.list(tagLambdaQueryWrapper);
+        List<Long> longList = tags.stream().map(ArticleTag::getTagId).collect(Collectors.toList());
+        Article article = getById(id);
+        ArticleDto articleDto = BeanCopyUtils.copyBean(article, ArticleDto.class);
+        articleDto.setTags(longList);
+        return ResponseResult.okResult(articleDto);
+    }
+
+    @Override
+    @Transactional
+    public ResponseResult updateArticle(ArticleDto articleDto) {
+        Article article = BeanCopyUtils.copyBean(articleDto, Article.class);
+        updateById(article);
+        //todo 这里应该是可以优化的，如何查出来直接是long
+        //直接根据Id查到tags删除
+//        LambdaQueryWrapper<ArticleTag> wrapper = new LambdaQueryWrapper<>();
+//        wrapper.eq(ArticleTag::getArticleId , articleDto.getId());
+//        wrapper.select(ArticleTag::getArticleId);
+//        List<ArticleTag> articleIdss = articleTagService.list(wrapper);
+
+        //使用mybatisplus中的定制化查询
+        List<Object> articleIds = articleTagService.getBaseMapper().selectObjs(
+                Wrappers.<ArticleTag>lambdaQuery()
+                .eq(ArticleTag::getArticleId, articleDto.getId())
+                .select(ArticleTag::getArticleId));
+
+        if (!ObjectUtils.isEmpty(articleIds)) {
+            List<Long> as = articleIds.stream()
+                    .map(obj -> (Long) obj)
+                    .collect(Collectors.toList());
+
+                articleTagService.deleteTagsBatchByArticleIds(as);
+
+//            if (as.size()>1) {
+//                articleTagService.removeByIds(as);
+//            }else  articleTagService.removeById(as.get(0));
+        }
+        List<ArticleTag> articleTags = articleDto.getTags().stream().map(
+                tagId -> new ArticleTag(article.getId(), tagId))
+                .collect(Collectors.toList());
+
         articleTagService.saveBatch(articleTags);
         return ResponseResult.okResult();
     }

@@ -32,7 +32,8 @@ public class CategoryController {
 
     @GetMapping("/listAllCategory")
     public ResponseResult listAllCategory(){
-        //直接复用前台服务接口,no，这个分类是给新写的博文提供分类的，需要查询所有
+        //直接复用前台服务接口,no，
+        // 这个分类是给新写的博文提供分类的，需要查询所有
         List<CategoryVo> categoryVos = categoryService.listAllCategory();
         return ResponseResult.okResult(categoryVos);
     }

@@ -48,7 +48,7 @@ public class SystemLoginServiceImpl implements LoginService {
     }
 
     @Override
-    public ResponseResult logout() {
+    public ResponseResult   logout() {
         Long userId = SecurityUtils.getUserId();
         redisCache.deleteObject("login:"+userId);
         return ResponseResult.okResult();

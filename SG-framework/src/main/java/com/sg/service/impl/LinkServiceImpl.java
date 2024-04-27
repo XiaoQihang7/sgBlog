@@ -4,11 +4,13 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sg.domain.ResponseResult;
 import com.sg.domain.constants.SystemConstants;
+import com.sg.domain.dto.LinkTestDate;
 import com.sg.domain.entity.Link;
 import com.sg.domain.vo.LinkVo;
 import com.sg.service.LinkService;
 import com.sg.mapper.LinkMapper;
 import com.sg.util.BeanCopyUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,6 +23,9 @@ import java.util.List;
 @Service
 public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements LinkService{
 
+    @Autowired
+    private LinkMapper linkMapper;
+
     @Override
     public ResponseResult getAllLink() {
         //查所有审核通过的链接
@@ -30,6 +35,12 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
         //转换为vo
         List<LinkVo> linkVos = BeanCopyUtils.copyBeanList(linkList, LinkVo.class);
         return ResponseResult.okResult(linkVos);
+    }
+
+    @Override
+    public ResponseResult selectDateTest(LinkTestDate date) {
+        List<LinkTestDate> linkTestDate = linkMapper.selectDateTest(date);
+        return ResponseResult.okResult(linkTestDate);
     }
 
 }

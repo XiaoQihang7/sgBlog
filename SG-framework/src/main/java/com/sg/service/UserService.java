@@ -2,7 +2,11 @@ package com.sg.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sg.domain.ResponseResult;
+import com.sg.domain.dto.UserReqDto;
 import com.sg.domain.entity.User;
+import io.netty.util.concurrent.CompleteFuture;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
 * @author 86156
@@ -17,4 +21,15 @@ public interface UserService extends IService<User> {
 
     ResponseResult register(User user);
 
+    CompletableFuture<Void> insertUserAsync(int i);
+
+    ResponseResult getUserList(Integer pageNum, Integer pageSize, String userName, String phonenumber, String status);
+
+    ResponseResult addUser(UserReqDto userReqDto);
+
+    ResponseResult getUserInfoById(Long id);
+
+    ResponseResult updateUserRoleInfo(UserReqDto userReqDto);
+
+    boolean deleteById(Long id);
 }
