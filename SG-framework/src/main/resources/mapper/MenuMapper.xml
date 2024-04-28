@@ -115,17 +115,34 @@
 
     <select id="getRootMenuTreeById" resultType="com.sg.domain.vo.MenuVo" parameterType="long">
         SELECT
+            m.id,
+            m.menu_name AS label,
+            m.parent_id AS parentId
+
+        FROM
+            sys_role_menu rm LEFT JOIN sys_menu m ON m.id = rm.menu_id
+        <where>
+            <if test="id != null">rm.role_id = #{id}</if>
+            AND `status` = 0
+            AND `del_flag` = 0
+        </where>
+
+    </select>
+
+    <select id="getAllMenuTreeNode" resultType="com.sg.domain.vo.MenuVo">
+        SELECT
             id,
             menu_name AS label,
             parent_id AS parentId
 
         FROM
-            sys_menu m LEFT JOIN sys_role_menu rm ON m.id = rm.menu_id
+            sys_menu
         WHERE
-            rm.role_id = #{id} AND
             `status` = 0 AND
             `del_flag` = 0
     </select>
+
+
 
 
 </mapper>

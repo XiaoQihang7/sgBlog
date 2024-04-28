@@ -15,5 +15,7 @@ public interface LinkService extends IService<Link> {
     ResponseResult getAllLink();
 
     ResponseResult selectDateTest(LinkTestDate date);
+
+    ResponseResult linkPageList(Integer pageNum, Integer pageSize, String name, String status);
 }
 

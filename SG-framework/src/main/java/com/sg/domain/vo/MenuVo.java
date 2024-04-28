@@ -15,7 +15,5 @@ public class MenuVo implements TreeNode<MenuVo> {
     @TableField(exist = false)
     private List<MenuVo> children;
 
-    private List<String> checkedKeys;
-
     // 省略构造函数、getter 和 setter 方法
 }

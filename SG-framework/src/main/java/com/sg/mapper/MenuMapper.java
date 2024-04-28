@@ -27,5 +27,7 @@ public interface MenuMapper extends BaseMapper<Menu> {
     List<MenuVo> getRootMenuTree();
 
     List<MenuVo> getRootMenuTreeById(Long id);
+
+    List<MenuVo> getAllMenuTreeNode();
 }
 

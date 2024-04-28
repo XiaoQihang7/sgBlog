@@ -22,11 +22,11 @@
         UPDATE sys_role
             SET
                 <if test="remark != null and remark != ''">remark = #{remark}, </if>
-                <if test="role_key != null and role_key != ''">role_key = #{roleKey}, </if>
-                <if test="role_name != null and role_name != ''">role_name = #{roleName}, </if>
-                <if test="role_sort != null">role_sort = #{roleSort}, </if>
+                <if test="roleKey != null and roleKey != ''">role_key = #{roleKey}, </if>
+                <if test="roleName != null and roleName != ''">role_name = #{roleName}, </if>
+                <if test="roleSort != null">role_sort = #{roleSort}, </if>
                 <if test="status != null">status = #{status}</if>
-            WHERE id =#{roleId}
+            WHERE id =#{id}
     </update>
 
 

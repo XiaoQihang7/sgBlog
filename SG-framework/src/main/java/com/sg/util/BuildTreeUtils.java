@@ -24,7 +24,7 @@ public class BuildTreeUtils {
         List<T> tree = new ArrayList<>();
         for (T item : items) {
             Long parentId = item.getParentId();
-            if (parentId == null || parentId.equals(0L)) {
+            if (parentId.equals(0L)) {
                 // 如果是顶层节点，则直接添加到树中
                 tree.add(item);
             } else {

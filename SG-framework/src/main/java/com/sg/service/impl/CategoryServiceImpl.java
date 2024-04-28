@@ -76,7 +76,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
             queryWrapper.eq(StringUtils.hasText(categoryVo.getStatus()),Category::getStatus,categoryVo.getStatus());
         }
 
-        //TODO 分页查询查的字段是否多了，顺便也看看其它分页查询
+        //分页查询查的字段是否多了，顺便也看看其它分页查询
         Page<Category> page = new Page<>(pageNum, pageSize);
         Page<Category> categoryPage = page(page, queryWrapper);
         PageVo pageVo = new PageVo(categoryPage.getRecords(), categoryPage.getTotal());

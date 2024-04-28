@@ -32,7 +32,7 @@ public interface RoleMapper extends BaseMapper<Role> {
 
     Long addRoleReturnId(Role role);
 
-    int updateRoleInfo(Role roleReqDto);
+    int updateRoleInfo(Role role);
 
 }
 

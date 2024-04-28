@@ -2,6 +2,7 @@ package com.sg.controller;
 
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
+import com.sg.Exception.SystemException;
 import com.sg.domain.ResponseResult;
 import com.sg.domain.entity.Category;
 import com.sg.domain.enums.AppHttpCodeEnum;
@@ -14,9 +15,7 @@ import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
@@ -48,6 +47,7 @@ public class CategoryController {
 
     @GetMapping("/export")
     @PreAuthorize("@ps.hasPermission('content:category:export')")
+    //todo 导出分类，模拟大数据情况下需要考虑和实现解决的方案
     public void export(HttpServletResponse response){
         try {
             WebUtils.setDownLoadHeader("分类",response);
@@ -63,4 +63,37 @@ public class CategoryController {
                 WebUtils.renderString(response, JSON.toJSONString(result));
         }
     }
+
+    @PostMapping
+    public ResponseResult addCategory(@RequestBody Category category){
+        categoryService.save(category);
+        return ResponseResult.okResult();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseResult getCategoryById(@PathVariable("id") Long id){
+        Category category = categoryService.getById(id);
+        CategoryVo categoryVo = BeanCopyUtils.copyBean(category, CategoryVo.class);
+        return ResponseResult.okResult(categoryVo);
+    }
+
+    @PutMapping
+    public ResponseResult updateCategory(@RequestBody Category category){
+        if (category == null || category.getId() == null){
+            throw new SystemException(AppHttpCodeEnum.PARAM_ERROR);
+        }
+        categoryService.updateById(category);
+        return ResponseResult.okResult();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseResult deleteCategory(@PathVariable("id") Long id){
+        if (id==null){
+            throw new SystemException(AppHttpCodeEnum.PARAM_ERROR);
+        }
+        categoryService.removeById(id);
+        return ResponseResult.okResult();
+    }
+
+
 }

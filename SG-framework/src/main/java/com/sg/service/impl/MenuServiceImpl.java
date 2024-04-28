@@ -6,6 +6,7 @@ import com.sg.domain.ResponseResult;
 import com.sg.domain.constants.SystemConstants;
 import com.sg.domain.entity.Menu;
 import com.sg.domain.vo.MenuVo;
+import com.sg.domain.vo.MenusVo;
 import com.sg.mapper.MenuMapper;
 import com.sg.util.BuildTreeUtils;
 import com.sg.util.SecurityUtils;
@@ -178,8 +179,14 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         // 根据角色id查询对应的菜单树结构
         List<MenuVo> rootMenuTree = this.getBaseMapper().getRootMenuTreeById(id);
 //        getUserMenuTree()
-        BuildTreeUtils.buildTree(rootMenuTree);
-        return ResponseResult.okResult(rootMenuTree);
+
+        //出现bug。没出错，构建好了没返回，闹了个乌龙
+        List<MenuVo> rootMenuTree1 = this.getBaseMapper().getAllMenuTreeNode();
+        List<MenuVo> menuVos = BuildTreeUtils.buildTree(rootMenuTree1);
+        List<Long> checkedKeys = rootMenuTree.stream().map(MenuVo::getId).collect(Collectors.toList());
+
+        MenusVo menusVo = new MenusVo(menuVos,checkedKeys);
+        return ResponseResult.okResult(menusVo);
     }
 }
 
